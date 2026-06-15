@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 
 const app = new Hono();
 
-const JWT_SECRET = 'your_jwt_secret_key';
+const JWT_SECRET = 'your_j…_key';
 
 // 允许跨域
 app.use('/api/*', cors());
@@ -26,7 +26,7 @@ const authMiddleware = async (c, next) => {
   }
 };
 
-// 获取上海时间格式化字符串
+// 获取上海时间
 function getShanghaiTime() {
   const date = new Date();
   const shanghaiTime = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
@@ -224,7 +224,6 @@ app.get('/api/cards/:menuId', async (c) => {
       if (!card.custom_logo_path) {
         card.display_logo = card.logo_url || (card.url.replace(/\/+$/, '') + '/favicon.ico');
       } else {
-        // CF 版里我们如果上传了自定义 logo，可以将 base64 存入 custom_logo_path 中，这里直接作为 data URI 输出
         card.display_logo = card.custom_logo_path;
       }
     });
@@ -269,7 +268,7 @@ app.delete('/api/cards/:id', authMiddleware, async (c) => {
   }
 });
 
-// ---------------- UPLOAD (转为 Base64 或静态资源存储) ----------------
+// ---------------- UPLOAD (转为 Base64) ----------------
 app.post('/api/upload', authMiddleware, async (c) => {
   try {
     const body = await c.req.parseBody();
@@ -277,7 +276,6 @@ app.post('/api/upload', authMiddleware, async (c) => {
     if (!file || typeof file === 'string') {
       return c.json({ error: 'No file uploaded' }, 400);
     }
-    // 读取文件并转为 Base64 以保存在 D1 中，避免 R2 的依赖复杂度
     const buffer = await file.arrayBuffer();
     const base64 = btoa(
       new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
@@ -505,12 +503,7 @@ app.get('/api/users', authMiddleware, async (c) => {
   }
 });
 
-// ---------------- STATIC WEB ASSETS ROUTING (适配 SPA 单页路由) ----------------
-app.all('*', async (c) => {
-  // 这部分逻辑将回退到 Cloudflare Workers Assets 机制，
-  // 我们也可以让 wrangler.json 中的 assets 配置自动托管静态网页。
-  // 在 Hono 中，只要路径不匹配上面的 /api，我们直接交给前端托管。
-  return c.env.ASSETS.fetch(c.req.raw);
-});
+// 移除了 app.all('*') 中导致 1042 fetch ASSETS 死锁的代码。
+// 仅处理 API。静态文件直接交给 Cloudflare Workers Assets 机制在边缘完成智能无损托管。
 
 export default app;
