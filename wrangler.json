@@ -5,6 +5,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "build": {
+    "command": "cd web && npm install && npm run build"
+  },
   "d1_databases": [
     {
       "binding": "DB",
