@@ -1,0 +1,17 @@
+{
+  "name": "nav-item-cf-backend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.30.0"
+  }
+}
