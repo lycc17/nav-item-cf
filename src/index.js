@@ -60,6 +60,59 @@ app.get('/api/fix-pwd', async (c) => {
     return c.json({ error: err.message }, 500);
   }
 });
+// ---------------- USER AUTH (诊断透视版) ----------------
+app.post('/api/login', async (c) => {
+  const { username, password } = await c.req.json();
+  try {
+    const user = await c.env.DB.prepare('SELECT * FROM users WHERE username = ?')
+      .bind(username)
+      .first();
+
+    // 诊断点 1：到底是不是没查到用户？
+    if (!user) {
+      return c.json({ 
+        error: `【诊断A】查无此人！传入的账号是:[${username}]，请检查是否有空格` 
+      }, 401);
+    }
+
+    const isValid = bcrypt.compareSync(String(password), String(user.password));
+    
+    // 诊断点 2：到底是不是哈希比对失败？
+    if (!isValid) {
+      return c.json({ 
+        error: '【诊断B】比对失败！请按F12看Network载荷', 
+        debug_info: {
+          input_pwd: password,
+          db_hash: user.password
+        }
+      }, 401);
+    }
+
+    const lastLoginTime = user.last_login_time;
+    const lastLoginIp = user.last_login_ip;
+
+    // 获取时间（如果原作者这里有缺漏，也会暴露出来）
+    const now = typeof getShanghaiTime === 'function' ? getShanghaiTime() : new Date().toISOString();
+    const ip = c.req.header('CF-Connecting-IP') || '127.0.0.1';
+
+    await c.env.DB.prepare('UPDATE users SET last_login_time = ?, last_login_ip = ? WHERE id = ?')
+      .bind(now, ip, user.id)
+      .run();
+
+    const payload = {
+      id: user.id,
+      username: user.username,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2 // 2h
+    };
+    const token = await sign(payload, JWT_SECRET);
+
+    return c.json({ token, lastLoginTime, lastLoginIp });
+  } catch (err) {
+    // 诊断点 3：万一是代码报错了，强制抛出真实报错信息！
+    return c.json({ error: `【诊断C代码崩溃】${err.message}` }, 500);
+  }
+});
+/*
 // ---------------- USER AUTH ----------------
 app.post('/api/login', async (c) => {
   const { username, password } = await c.req.json();
@@ -99,7 +152,7 @@ app.post('/api/login', async (c) => {
     return c.json({ error: err.message }, 500);
   }
 });
-
+*/
 // ---------------- MENUS ----------------
 app.get('/api/menus', async (c) => {
   const { page, pageSize } = c.req.query();
