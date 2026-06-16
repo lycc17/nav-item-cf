@@ -39,6 +39,27 @@ function getShanghaiTime() {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+// ---------------- TEMP FIX PWD ----------------
+app.get('/api/fix-pwd', async (c) => {
+  try {
+    // 1. 让服务器当场生成 123456 的正确加密哈希
+    const realHash = bcrypt.hashSync('123456', 10);
+    
+    // 2. 强行将正确的密文更新到 admin 账号里
+    await c.env.DB.prepare('UPDATE users SET password = ? WHERE username = ?')
+      .bind(realHash, 'admin')
+      .run();
+      
+    // 3. 返回成功提示
+    return c.json({ 
+      success: true, 
+      message: '真相大白！密码已强制修正为 123456', 
+      realHash: realHash 
+    });
+  } catch (err) {
+    return c.json({ error: err.message }, 500);
+  }
+});
 // ---------------- USER AUTH ----------------
 app.post('/api/login', async (c) => {
   const { username, password } = await c.req.json();
