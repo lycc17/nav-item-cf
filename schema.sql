@@ -86,8 +86,8 @@ INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") 
 INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") VALUES (1, NULL, 'Cloudflare', 'https://dash.cloudflare.com', '', '全球最大的cdn服务商', 4);
 
 -- 默认卡片 (AI chat, ID 1)
-INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") VALUES (NULL, 1, 'ChatGPT', 'https://chat.openai.com', 'https://cdn.oaistatic.com/assets/favicon-eex17e9e.ico', 'OpenAI官方AI对话', 1);
-INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") VALUES (NULL, 1, 'Deepseek', 'https://www.deepseek.com', 'https://cdn.deepseek.com/chat/icon.png', 'Deepseek AI搜索', 2);
+INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") VALUES (2, NULL, 'ChatGPT', 'https://chat.openai.com', 'https://cdn.oaistatic.com/assets/favicon-eex17e9e.ico', 'OpenAI官方AI对话', 1);
+INSERT INTO cards (menu_id, sub_menu_id, title, url, logo_url, "desc", "order") VALUES (2, NULL, 'Deepseek', 'https://www.deepseek.com', 'https://cdn.deepseek.com/chat/icon.png', 'Deepseek AI搜索', 2);
 
 -- 默认管理员账号密码：admin / 123456 (注意：密码哈希值通过 bcrypt 预计算写入)
 -- $2a$10$Y145r/73j8D1lB1V/Z/Lle1yK8Uj27X.a7t65K2oG2PkWz.6Wp1Pq 是 123456 的 bcrypt 哈希值
