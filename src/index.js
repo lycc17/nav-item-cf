@@ -18,7 +18,7 @@ const authMiddleware = async (c, next) => {
   }
   const token = authHeader.slice(7);
   try {
-    const payload = await verify(token, JWT_SECRET);
+    const payload = await verify(token, JWT_SECRET,'HS256');
     c.set('jwtPayload', payload);
     await next();
   } catch (e) {
@@ -105,7 +105,7 @@ app.post('/api/login', async (c) => {
       username: user.username,
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2 // 2h
     };
-    const token = await sign(payload, JWT_SECRET);
+    const token = await sign(payload, JWT_SECRET,'HS256');
 
     return c.json({ token, lastLoginTime, lastLoginIp });
   } catch (err) {
