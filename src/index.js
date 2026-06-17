@@ -579,5 +579,21 @@ app.get('/api/users', authMiddleware, async (c) => {
 
 // 移除了 app.all('*') 中导致 1042 fetch ASSETS 死锁的代码。
 // 仅处理 API。静态文件直接交给 Cloudflare Workers Assets 机制在边缘完成智能无损托管。
+// ---------------- SPA 路由兜底 ----------------
+// 放在所有 API 路由的最下面！
+app.get('*', async (c) => {
+  // 1. 如果请求的不是后端的 /api 接口
+  if (!c.req.path.startsWith('/api')) {
+    // 2. 构建一个强行指向根目录 (/) 的请求
+    const indexUrl = new URL(c.req.url);
+    indexUrl.pathname = '/';
+    // 3. 从 Cloudflare 的静态资源(ASSETS)中抓取 index.html 返回给用户
+    return await c.env.ASSETS.fetch(new Request(indexUrl));
+  }
+  
+  // 4. 如果真的是某个瞎写的 API 接口，返回标准的接口 404
+  return c.json({ error: 'API Not Found' }, 404);
+});
 
+// 这个应该是你文件原本最后一行
 export default app;
