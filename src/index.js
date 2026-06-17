@@ -22,7 +22,8 @@ const authMiddleware = async (c, next) => {
     c.set('jwtPayload', payload);
     await next();
   } catch (e) {
-    return c.json({ error: '无效token' }, 401);
+    //return c.json({ error: '无效token' }, 401);
+    return c.json({ error: `【Token诊断】验证失败原因: ${e.message}`, token_val: token }, 401);
   }
 };
 
